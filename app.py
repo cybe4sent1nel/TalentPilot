@@ -1,439 +1,531 @@
 import streamlit as st
-import json
-import datetime
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
 from fpdf import FPDF
 from openai import OpenAI
 import time
 import base64
+import json
+from datetime import datetime, timedelta
+import random
 
-# --- CONFIGURATION & STYLE ---
+# --- CONFIGURATION ---
 st.set_page_config(
-    page_title="TalentPilot | AI HR Workspace",
-    page_icon="🌱",
+    page_title="TalentPilot | AI HR Orchestration",
+    page_icon="🧭",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# --- ASSETS & LOGO GENERATION ---
-def get_logo_svg():
-    """Generates a Green/White SVG Logo for TalentPilot."""
-    # A modern abstract 'T' / Leaf shape in Green 60
-    svg = """
-    <svg width="150" height="150" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="100" cy="100" r="90" fill="#198038" />
-      <path d="M100 40 L100 160 M60 60 L140 60" stroke="white" stroke-width="20" stroke-linecap="round" />
-      <path d="M100 100 L140 60" stroke="white" stroke-width="15" stroke-linecap="round" />
-    </svg>
-    """
-    b64 = base64.b64encode(svg.encode('utf-8')).decode("utf-8")
-    return f'<img src="data:image/svg+xml;base64,{b64}" width="80" style="margin-bottom: 1rem;">'
+# --- THEME & STYLING ---
+COLOR_PRIMARY = "#1E3A8A"  # Deep Blue
+COLOR_SECONDARY = "#F97316"  # Vibrant Orange
+COLOR_BG = "#F8FAFC"
+COLOR_SUCCESS = "#10B981"
 
-# --- CUSTOM CSS (GREEN THEME) ---
-st.markdown("""
+st.markdown(f"""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600&display=swap');
     
-    html, body, [class*="css"] {
+    /* Global Reset */
+    html, body, [class*="css"] {{
         font-family: 'Inter', sans-serif;
-        background-color: #ffffff;
-        color: #161616;
-    }
+        background-color: {COLOR_BG};
+        color: #1e293b;
+    }}
     
-    /* Sidebar Styling */
-    [data-testid="stSidebar"] {
-        background-color: #f4f4f4;
-        border-right: 1px solid #e0e0e0;
-    }
-    
-    /* Header Styling */
-    .header-container {
-        padding: 2rem;
-        background: linear-gradient(135deg, #198038 0%, #0E6027 100%); /* IBM Green 60 to 70 */
-        color: white;
-        border-radius: 8px;
-        margin-bottom: 2rem;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-    
-    /* Primary Button - Green 60 */
-    .stButton>button {
-        background-color: #198038;
-        color: white;
-        border-radius: 4px;
-        border: none;
-        padding: 0.6rem 1.2rem;
+    h1, h2, h3 {{
+        font-family: 'Poppins', sans-serif;
         font-weight: 600;
-        transition: all 0.2s;
-    }
-    .stButton>button:hover {
-        background-color: #0E6027; /* Green 70 */
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    }
-    
-    /* Login Box */
-    .auth-box {
-        max-width: 400px;
-        margin: 6rem auto;
-        background: white;
-        padding: 2.5rem;
-        border: 1px solid #e0e0e0;
-        border-radius: 12px;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-        text-align: center;
-    }
-    
-    /* Chat Bubbles */
-    .chat-user {
-        background-color: #E8F5E9; /* Light Green */
-        color: #0E6027;
-        padding: 1rem;
-        border-radius: 12px 12px 0 12px;
-        margin-bottom: 10px;
-        text-align: right;
-        border: 1px solid #C8E6C9;
-    }
-    .chat-bot {
+        color: {COLOR_PRIMARY};
+    }}
+
+    /* Sidebar */
+    [data-testid="stSidebar"] {{
         background-color: white;
-        border: 1px solid #e0e0e0;
-        color: #161616;
-        padding: 1.5rem;
-        border-radius: 12px 12px 12px 0;
-        margin-bottom: 10px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    }
+        border-right: 1px solid #e2e8f0;
+    }}
     
-    /* Status Indicators */
-    .status-box {
+    /* Custom Cards (Glassmorphism-lite) */
+    .tp-card {{
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        border: 1px solid #f1f5f9;
+        margin-bottom: 1.5rem;
+        transition: transform 0.2s;
+    }}
+    .tp-card:hover {{
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+    }}
+    
+    /* Metrics Card */
+    .metric-value {{
+        font-size: 2rem;
+        font-weight: 700;
+        color: {COLOR_PRIMARY};
+    }}
+    .metric-label {{
+        color: #64748b;
+        font-size: 0.875rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }}
+
+    /* Primary Button */
+    .stButton>button {{
+        background: linear-gradient(135deg, {COLOR_PRIMARY} 0%, #2563eb 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0.6rem 1.2rem;
+        font-weight: 500;
+        box-shadow: 0 4px 6px rgba(30, 58, 138, 0.2);
+        transition: all 0.2s;
+    }}
+    .stButton>button:hover {{
+        box-shadow: 0 6px 8px rgba(30, 58, 138, 0.3);
+        transform: translateY(-1px);
+    }}
+
+    /* Secondary/Action Button */
+    .action-btn {{
+        background-color: {COLOR_SECONDARY};
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        text-decoration: none;
+        display: inline-block;
+    }}
+
+    /* Chat Interface */
+    .chat-container {{
+        background: white;
+        border-radius: 12px;
         padding: 1rem;
-        border-left: 4px solid #198038;
-        background: #f9f9f9;
-        margin-bottom: 1rem;
-    }
+        border: 1px solid #e2e8f0;
+        height: 400px;
+        overflow-y: auto;
+    }}
+    
+    /* Login Screen */
+    .login-container {{
+        max-width: 450px;
+        margin: 10vh auto;
+        padding: 3rem;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        text-align: center;
+        border-top: 5px solid {COLOR_SECONDARY};
+    }}
     </style>
 """, unsafe_allow_html=True)
 
-# --- AUTHENTICATION SYSTEM ---
-def check_auth():
+# --- ASSETS ---
+def get_logo_svg(width=120):
+    """Generates the TalentPilot Compass Logo."""
+    svg = f"""
+    <svg width="{width}" height="{width}" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" style="stop-color:#1E3A8A;stop-opacity:1" />
+          <stop offset="100%" style="stop-color:#2563eb;stop-opacity:1" />
+        </linearGradient>
+      </defs>
+      <!-- Compass Ring -->
+      <circle cx="100" cy="100" r="90" fill="none" stroke="url(#grad1)" stroke-width="12" />
+      <!-- Inner Content -->
+      <circle cx="100" cy="100" r="75" fill="white" />
+      <!-- Needle (Orange) -->
+      <path d="M100 30 L125 100 L100 170 L75 100 Z" fill="#F97316" />
+      <!-- Person Icon Overlay -->
+      <circle cx="100" cy="80" r="15" fill="white" />
+      <path d="M85 110 Q100 130 115 110" stroke="white" stroke-width="4" fill="none" />
+    </svg>
+    """
+    b64 = base64.b64encode(svg.encode('utf-8')).decode("utf-8")
+    return f'<img src="data:image/svg+xml;base64,{b64}" width="{width}">'
+
+# --- MOCK DATA & UTILS ---
+def init_session_state():
     if 'authenticated' not in st.session_state:
         st.session_state.authenticated = False
+    if 'chat_history' not in st.session_state:
+        st.session_state.chat_history = []
+    if 'employees' not in st.session_state:
+        # Mock Employee DB
+        st.session_state.employees = pd.DataFrame([
+            {"ID": "TP001", "Name": "Sarah Connor", "Role": "VP of People", "Dept": "HR", "Status": "Active", "Performance": 4.8},
+            {"ID": "TP002", "Name": "John Smith", "Role": "Senior Engineer", "Dept": "Engineering", "Status": "Active", "Performance": 4.2},
+            {"ID": "TP003", "Name": "Emily Chen", "Role": "Product Designer", "Dept": "Product", "Status": "Onboarding", "Performance": 0.0},
+            {"ID": "TP004", "Name": "Marcus Johnson", "Role": "Sales Lead", "Dept": "Sales", "Status": "Active", "Performance": 4.5},
+        ])
+    if 'candidates' not in st.session_state:
+        st.session_state.candidates = [
+            {"Name": "Alex Rivera", "Role": "Frontend Dev", "Stage": "Interview", "Score": 88},
+            {"Name": "Jordan Lee", "Role": "Frontend Dev", "Stage": "Screening", "Score": 75},
+        ]
 
+def get_llm_response(messages, api_key, model="openai/gpt-4o-mini"):
+    """Centralized AI Handler."""
+    if not api_key:
+        return "⚠️ API Key missing. Please check settings."
+    
+    client = OpenAI(base_url="https://openrouter.ai/api/v1", api_key=api_key)
+    
+    try:
+        response = client.chat.completions.create(
+            model=model,
+            messages=messages
+        )
+        return response.choices[0].message.content
+    except Exception as e:
+        return f"Error: {str(e)}"
+
+# --- PDF GENERATOR ---
+def create_offer_letter(name, role, salary, start_date):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", "B", 20)
+    pdf.set_text_color(30, 58, 138) # Brand Blue
+    pdf.cell(0, 10, "TalentPilot Inc.", ln=True)
+    
+    pdf.set_font("Arial", "", 12)
+    pdf.set_text_color(50, 50, 50)
+    pdf.ln(10)
+    
+    content = f"""
+    OFFER OF EMPLOYMENT
+    
+    Date: {datetime.now().strftime('%B %d, %Y')}
+    
+    Dear {name},
+    
+    We are thrilled to offer you the position of {role} at TalentPilot Inc.
+    
+    COMPENSATION
+    Annual Base Salary: ${salary}
+    Start Date: {start_date}
+    
+    BENEFITS
+    - Comprehensive Health, Dental, Vision
+    - 401(k) Matching
+    - Unlimited PTO
+    
+    We believe your skills will be a valuable asset to our team.
+    
+    Sincerely,
+    
+    HR Department
+    """
+    pdf.multi_cell(0, 8, content)
+    return pdf.output(dest='S').encode('latin-1')
+
+# --- MODULES ---
+
+def render_dashboard():
+    st.markdown("## 🏠 Executive Dashboard")
+    
+    # Quick Stats
+    c1, c2, c3, c4 = st.columns(4)
+    
+    with c1:
+        st.markdown("""
+        <div class="tp-card">
+            <div class="metric-label">Total Headcount</div>
+            <div class="metric-value">142</div>
+            <div style="color: #10B981; font-size: 0.8rem;">↑ 12% vs last month</div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+    with c2:
+        st.markdown("""
+        <div class="tp-card">
+            <div class="metric-label">Open Positions</div>
+            <div class="metric-value">8</div>
+            <div style="color: #F59E0B; font-size: 0.8rem;">3 Urgent</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with c3:
+        st.markdown("""
+        <div class="tp-card">
+            <div class="metric-label">Offer Acceptance</div>
+            <div class="metric-value">94%</div>
+            <div style="color: #10B981; font-size: 0.8rem;">Top 5% Industry</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with c4:
+        st.markdown("""
+        <div class="tp-card">
+            <div class="metric-label">Avg. Tenure</div>
+            <div class="metric-value">2.4y</div>
+            <div style="color: #64748b; font-size: 0.8rem;">Stable</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    # Charts
+    col_chart1, col_chart2 = st.columns(2)
+    
+    with col_chart1:
+        st.markdown("### 📈 Recruitment Funnel")
+        funnel_data = dict(
+            number=[1200, 600, 200, 50, 20],
+            stage=["Applied", "Screened", "Interviewed", "Offered", "Hired"]
+        )
+        fig = px.funnel(funnel_data, x='number', y='stage', color_discrete_sequence=[COLOR_PRIMARY])
+        fig.update_layout(paper_bgcolor="white", plot_bgcolor="white", height=300)
+        st.plotly_chart(fig, use_container_width=True)
+
+    with col_chart2:
+        st.markdown("### 🌍 Department Distribution")
+        dept_counts = st.session_state.employees['Dept'].value_counts().reset_index()
+        dept_counts.columns = ['Dept', 'Count']
+        fig2 = px.pie(dept_counts, values='Count', names='Dept', hole=0.4, color_discrete_sequence=px.colors.sequential.Blues_r)
+        fig2.update_layout(height=300)
+        st.plotly_chart(fig2, use_container_width=True)
+
+def render_recruitment(api_key):
+    st.markdown("## 👥 Smart Recruitment")
+    
+    tabs = st.tabs(["Job Description Generator", "Candidate Pipeline", "Resume Parser"])
+    
+    with tabs[0]:
+        c1, c2 = st.columns([1, 2])
+        with c1:
+            st.markdown("### JD Parameters")
+            role_title = st.text_input("Job Title", "Senior Python Developer")
+            skills = st.text_area("Key Skills", "Python, Streamlit, AWS, AI Agents")
+            vibe = st.selectbox("Culture/Vibe", ["Professional", "Startup/Energetic", "Academic"])
+            
+            if st.button("✨ Generate JD"):
+                with st.spinner("AI is drafting..."):
+                    prompt = f"Write a {vibe} job description for a {role_title}. Requirements: {skills}. Keep it concise and engaging."
+                    jd_text = get_llm_response([{"role": "user", "content": prompt}], api_key)
+                    st.session_state.generated_jd = jd_text
+        
+        with c2:
+            if 'generated_jd' in st.session_state:
+                st.markdown("### Draft Preview")
+                st.markdown(f'<div class="tp-card">{st.session_state.generated_jd}</div>', unsafe_allow_html=True)
+                st.download_button("📥 Download .txt", st.session_state.generated_jd, "job_description.txt")
+
+    with tabs[1]:
+        st.markdown("### Active Pipeline")
+        df = pd.DataFrame(st.session_state.candidates)
+        st.dataframe(df, use_container_width=True)
+
+def render_onboarding(api_key):
+    st.markdown("## 📋 Onboarding Orchestrator")
+    
+    st.info("💡 This module uses the Agentic Workflow to connect Offer Generation -> IT Provisioning -> Scheduling.")
+    
+    c1, c2 = st.columns([1, 1])
+    
+    with c1:
+        st.markdown("### New Hire Details")
+        with st.form("onboard_form"):
+            name = st.text_input("Candidate Name")
+            role = st.text_input("Role")
+            salary = st.text_input("Annual Salary ($)")
+            start_date = st.date_input("Start Date")
+            submitted = st.form_submit_button("🚀 Launch Onboarding Sequence")
+    
+    with c2:
+        st.markdown("### Workflow Status")
+        if submitted and api_key:
+            with st.status("Orchestrating...", expanded=True):
+                st.write("✅ **Step 1: Offer Letter**")
+                pdf_bytes = create_offer_letter(name, role, salary, str(start_date))
+                st.download_button("📄 Download Offer PDF", pdf_bytes, f"Offer_{name}.pdf", "application/pdf")
+                time.sleep(1)
+                
+                st.write("✅ **Step 2: IT Provisioning**")
+                device = "MacBook Pro" if "Developer" in role else "MacBook Air"
+                st.code(f"Provisioning Ticket: REQ-9928\nAsset: {device}\nAccounts: Slack, Jira, G-Suite", language="json")
+                time.sleep(1)
+                
+                st.write("✅ **Step 3: Orientation Schedule**")
+                st.caption(f"Calendar invite sent to manager for {start_date}")
+                
+            st.success(f"Onboarding for {name} initiated successfully!")
+
+def render_employees():
+    st.markdown("## 💼 Employee Directory")
+    
+    search = st.text_input("🔍 Search Employees", placeholder="Name, Role, or ID...")
+    
+    df = st.session_state.employees
+    if search:
+        df = df[df.apply(lambda row: row.astype(str).str.contains(search, case=False).any(), axis=1)]
+        
+    st.dataframe(
+        df, 
+        column_config={
+            "Performance": st.column_config.ProgressColumn(
+                "Performance Rating",
+                help="Last review score",
+                format="%.1f",
+                min_value=0,
+                max_value=5,
+            ),
+        },
+        use_container_width=True
+    )
+    
+    with st.expander("➕ Add New Employee Manually"):
+        st.text_input("Name")
+        st.text_input("Role")
+        st.button("Save to Database")
+
+def render_chat_copilot(api_key):
+    """Floating-style Sidebar Chat."""
+    st.sidebar.markdown("---")
+    st.sidebar.markdown("### 🤖 TalentPilot Assistant")
+    
+    # Initialize chat history for sidebar
+    if "copilot_history" not in st.session_state:
+        st.session_state.copilot_history = []
+
+    # Display minimal history (last 3 messages) to save space
+    for msg in st.session_state.copilot_history[-3:]:
+        bg = "#e0f2fe" if msg["role"] == "user" else "#f1f5f9"
+        st.sidebar.markdown(f"""
+        <div style="background:{bg}; padding:8px; border-radius:8px; margin-bottom:5px; font-size:0.85rem;">
+            <strong>{'You' if msg['role'] == 'user' else 'Pilot'}:</strong> {msg['content']}
+        </div>
+        """, unsafe_allow_html=True)
+
+    prompt = st.sidebar.text_input("Ask me anything...", key="sidebar_chat")
+    if st.sidebar.button("Send", key="sidebar_send") and prompt:
+        st.session_state.copilot_history.append({"role": "user", "content": prompt})
+        
+        with st.sidebar.spinner("Thinking..."):
+            # Context-aware system prompt
+            sys_prompt = "You are TalentPilot, an HR AI assistant. You help with quick HR lookups, policy questions, and drafting emails."
+            messages = [{"role": "system", "content": sys_prompt}] + st.session_state.copilot_history
+            
+            response = get_llm_response(messages, api_key)
+            st.session_state.copilot_history.append({"role": "assistant", "content": response})
+            st.rerun()
+
+# --- MAIN APP ---
+def main():
+    init_session_state()
+    
+    # -- AUTH SCREEN --
     if not st.session_state.authenticated:
         st.markdown(f"""
-            <div class="auth-box">
-                {get_logo_svg()}
-                <h2 style="color: #198038; margin-top:0;">TalentPilot</h2>
-                <p style="color: #525252; font-size: 0.9rem;">Secure Agentic HR Workspace</p>
+            <div class="login-container">
+                {get_logo_svg(150)}
+                <h1 style="color: {COLOR_PRIMARY}; margin-top: 1rem;">TalentPilot</h1>
+                <p style="color: #64748b;">AI-Powered HR Orchestration System</p>
+                <div style="margin-top: 2rem;"></div>
             </div>
         """, unsafe_allow_html=True)
         
-        col1, col2, col3 = st.columns([1, 1, 1])
-        with col2:
-            username = st.text_input("Username", placeholder="admin", label_visibility="collapsed")
-            password = st.text_input("Password", type="password", placeholder="admin", label_visibility="collapsed")
-            
-            if st.button("Log In to Workspace", use_container_width=True):
-                if username == "admin" and password == "admin":
+        c1, c2, c3 = st.columns([1, 1, 1])
+        with c2:
+            api_key = st.text_input("OpenRouter API Key", type="password", help="Required for AI features")
+            if st.button("Login to Workspace", use_container_width=True):
+                if api_key: # Simple check
                     st.session_state.authenticated = True
+                    st.session_state.api_key = api_key
                     st.rerun()
                 else:
-                    st.error("Access Denied.")
-        return False
-    return True
-
-# --- REAL SKILLS (TOOLS) ---
-
-def generate_offer_letter(candidate_name, role, salary, start_date):
-    """Generates a professional, multi-page PDF offer letter."""
-    pdf = FPDF()
-    pdf.add_page()
-    
-    # -- Page 1: Formal Offer --
-    # Letterhead
-    pdf.set_font("Arial", 'B', 20)
-    pdf.set_text_color(25, 128, 56) # Green 60
-    pdf.cell(0, 10, "TalentPilot", ln=True, align='L')
-    pdf.set_font("Arial", '', 10)
-    pdf.set_text_color(100, 100, 100)
-    pdf.cell(0, 5, "123 Innovation Drive, Tech City, NY", ln=True)
-    pdf.ln(10)
-    
-    # Title
-    pdf.set_text_color(0, 0, 0)
-    pdf.set_font("Arial", 'B', 14)
-    pdf.cell(0, 10, "OFFER OF EMPLOYMENT", ln=True, align='C')
-    pdf.ln(5)
-    
-    # Body Text
-    pdf.set_font("Arial", '', 11)
-    current_date = datetime.date.today().strftime("%B %d, %Y")
-    
-    body = f"""
-    {current_date}
-
-    Dear {candidate_name},
-
-    We are pleased to extend an offer of employment for the position of {role} at TalentPilot Inc. We were impressed with your skills and experience, and we believe you will be a fantastic addition to our team.
-
-    1. Position & Start Date
-    Your position will be {role}, reporting to the Head of Department. Your anticipated start date is {start_date}.
-
-    2. Compensation
-    Your starting annual base salary will be ${salary}, paid on a semi-monthly basis. In addition, you will be eligible for our annual performance bonus plan with a target of 15% of your base salary.
-
-    3. Benefits
-    You will be eligible to participate in the Company's comprehensive benefits program, which includes:
-      - Medical, Dental, and Vision Insurance (100% premiums covered)
-      - 401(k) Retirement Plan with 5% matching
-      - Unlimited Paid Time Off (PTO) policy
-      - $2,000 Annual Learning Stipend
-
-    4. Stock Options
-    Subject to approval by the Board of Directors, you will be granted an option to purchase 5,000 shares of the Company's Common Stock.
-
-    5. At-Will Employment
-    Your employment with the Company is "at-will." This means that either you or the Company may terminate the employment relationship at any time, with or without cause or notice.
-
-    We look forward to you joining us!
-
-    Sincerely,
-
-    Sarah Connor
-    VP of People, TalentPilot
-    """
-    pdf.multi_cell(0, 6, body)
-    pdf.ln(15)
-    
-    # Signature Line
-    pdf.cell(0, 10, "__________________________", ln=True)
-    pdf.cell(0, 5, "Candidate Signature", ln=True)
-    
-    # Output
-    filename = f"Offer_Letter_{candidate_name.replace(' ', '_')}.pdf"
-    return filename, pdf.output(dest='S').encode('latin-1')
-
-def provision_it_hardware(candidate_name, role):
-    """Simulates calling ServiceNow API."""
-    is_eng = any(x in role.lower() for x in ["engineer", "developer", "data", "architect"])
-    device = "MacBook Pro 16\" M3 Max" if is_eng else "MacBook Air 15\" M3"
-    ticket_id = f"REQ-{int(time.time())}-77"
-    
-    return {
-        "status": "success",
-        "ticket_id": ticket_id,
-        "assigned_device": device,
-        "accessories": ["Magic Keyboard", "Magic Mouse", "4K Monitor"] if is_eng else ["Magic Mouse"],
-        "software_bundle": "Engineering_Suite_V2" if is_eng else "General_Business_Suite"
-    }
-
-def schedule_welcome_lunch(candidate_name, team_name, date):
-    """Simulates Google Calendar API."""
-    return {
-        "status": "confirmed",
-        "event_link": "https://calendar.google.com/event?eid=xyz",
-        "attendees": [f"manager@{team_name}.com", "team@talentpilot.ai"],
-        "time": f"{date} at 12:30 PM EST",
-        "location": "The Green Room (Cafeteria)"
-    }
-
-# --- ORCHESTRATION ENGINE ---
-def get_llm_response(messages, api_key):
-    """Connects to OpenRouter/watsonx."""
-    client = OpenAI(
-        base_url="https://openrouter.ai/api/v1",
-        api_key=api_key,
-    )
-    
-    tools = [
-        {
-            "type": "function",
-            "function": {
-                "name": "generate_offer_letter",
-                "description": "Create a detailed PDF offer letter contract.",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "candidate_name": {"type": "string"},
-                        "role": {"type": "string"},
-                        "salary": {"type": "string"},
-                        "start_date": {"type": "string", "description": "YYYY-MM-DD"}
-                    },
-                    "required": ["candidate_name", "role", "salary", "start_date"]
-                }
-            }
-        },
-        {
-            "type": "function",
-            "function": {
-                "name": "provision_it_hardware",
-                "description": "Order laptop and equipment via ServiceNow.",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "candidate_name": {"type": "string"},
-                        "role": {"type": "string"}
-                    },
-                    "required": ["candidate_name", "role"]
-                }
-            }
-        },
-        {
-            "type": "function",
-            "function": {
-                "name": "schedule_welcome_lunch",
-                "description": "Book a team lunch on the calendar.",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "candidate_name": {"type": "string"},
-                        "team_name": {"type": "string"},
-                        "date": {"type": "string"}
-                    },
-                    "required": ["candidate_name", "team_name", "date"]
-                }
-            }
-        }
-    ]
-
-    try:
-        response = client.chat.completions.create(
-            model="openai/gpt-4o-mini",
-            messages=messages,
-            tools=tools,
-            tool_choice="auto", 
-        )
-        return response.choices[0].message
-    except Exception as e:
-        st.error(f"Connection Error: {e}")
-        return None
-
-# --- MAIN APP LOGIC ---
-
-def main():
-    if not check_auth():
+                    st.error("Please enter an API key (or any string for demo)")
         return
 
-    # Sidebar
+    # -- LOGGED IN UI --
+    
+    # Sidebar Nav
     with st.sidebar:
-        st.markdown(get_logo_svg(), unsafe_allow_html=True)
-        st.markdown("### **TalentPilot**")
-        st.caption("Agentic HR Workspace v2.0")
-        st.markdown("---")
+        st.markdown(get_logo_svg(80), unsafe_allow_html=True)
+        st.markdown(f"<h2 style='color:{COLOR_PRIMARY}'>TalentPilot</h2>", unsafe_allow_html=True)
         
-        api_key = st.text_input("Agent API Key", type="password")
+        menu = st.radio("Navigation", [
+            "Dashboard", 
+            "Recruitment", 
+            "Onboarding", 
+            "Employee Mgmt", 
+            "Performance", 
+            "Analytics",
+            "Settings"
+        ], label_visibility="collapsed")
         
-        st.markdown("#### ⚡ Connected Systems")
-        st.success("🟢 DocuSign (Contracts)")
-        st.success("🟢 ServiceNow (Hardware)")
-        st.success("🟢 Workday (HRIS)")
-        st.success("🟢 G-Suite (Calendar)")
-        
-        if st.button("Clear Context"):
-            st.session_state.messages = []
+        render_chat_copilot(st.session_state.get('api_key'))
+
+    # Header
+    c1, c2 = st.columns([3, 1])
+    with c1:
+        st.markdown(f"# {menu}")
+        st.markdown(f"Welcome back, **Admin**. Today is {datetime.now().strftime('%A, %B %d')}.")
+    with c2:
+        st.markdown(" ")
+        if st.button("Log Out"):
+            st.session_state.authenticated = False
             st.rerun()
 
-    # Main Banner
-    # Using a professional office stock image for the banner
-    st.image("https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2301&auto=format&fit=crop", 
-             use_container_width=True, caption="TalentPilot Operations Center")
+    st.markdown("---")
 
-    st.title("Good Morning, HR Team.")
-    st.markdown("Your AI agent is ready to assist with onboarding, procurement, and scheduling.")
-
-    if not api_key:
-        st.info("Please enter your API Key in the sidebar to activate the neural engine.")
-        st.stop()
-
-    # Initialize History
-    if "messages" not in st.session_state:
-        st.session_state.messages = [
-            {"role": "system", "content": "You are TalentPilot, an expert HR AI. You are professional, efficient, and helpful. You coordinate onboarding by calling relevant tools."}
-        ]
-
-    # Display Chat
-    for msg in st.session_state.messages:
-        if msg["role"] != "system":
-            # Render Tool Usage
-            if msg.get("tool_calls"):
-                with st.status("🧠 Thinking & Orchestrating...", expanded=False):
-                    for tool in msg["tool_calls"]:
-                        fn = tool['function']['name']
-                        args = json.loads(tool['function']['arguments'])
-                        st.markdown(f"**Activating Skill:** `{fn}`")
-                        st.code(json.dumps(args, indent=2), language='json')
-            
-            # Render Content
-            content = msg.get("content")
-            if content:
-                with st.chat_message(msg["role"], avatar="👤" if msg["role"] == "user" else "🌱"):
-                    st.write(content)
-
-    # User Input
-    if prompt := st.chat_input("Try: 'Onboard Alex Chen as Senior Engineer, $160k salary, starting Dec 1st'"):
-        st.session_state.messages.append({"role": "user", "content": prompt})
-        with st.chat_message("user", avatar="👤"):
-            st.write(prompt)
-
-        # AI Response
-        with st.chat_message("assistant", avatar="🌱"):
-            with st.spinner("Processing Request..."):
-                response = get_llm_response(st.session_state.messages, api_key)
+    # Routing
+    api_key = st.session_state.get('api_key')
+    
+    if menu == "Dashboard":
+        render_dashboard()
+        
+    elif menu == "Recruitment":
+        render_recruitment(api_key)
+        
+    elif menu == "Onboarding":
+        render_onboarding(api_key)
+        
+    elif menu == "Employee Mgmt":
+        render_employees()
+        
+    elif menu == "Performance":
+        st.markdown("## 📊 Performance Reviews")
+        st.info("Select an employee to generate a review template.")
+        emp = st.selectbox("Employee", st.session_state.employees['Name'])
+        if st.button("Generate Review Template"):
+            with st.spinner(f"Drafting 360-review for {emp}..."):
+                st.markdown(f"""
+                ### 360 Performance Review: {emp}
+                **Period:** Q4 2025
                 
-                if response:
-                    msg_data = response.model_dump()
-                    
-                    # Tool Handling
-                    if msg_data.get("tool_calls"):
-                        st.session_state.messages.append(msg_data)
-                        
-                        for tool_call in msg_data["tool_calls"]:
-                            fn_name = tool_call['function']['name']
-                            args = json.loads(tool_call['function']['arguments'])
-                            
-                            # UI for Action
-                            with st.container():
-                                st.markdown(f"### ⚡ Action: {fn_name.replace('_', ' ').title()}")
-                                
-                                if fn_name == "generate_offer_letter":
-                                    fname, pdf_bytes = generate_offer_letter(**args)
-                                    st.success("Offer Letter Generated Successfully")
-                                    st.download_button("📥 Download Signed PDF", pdf_bytes, fname, "application/pdf")
-                                    tool_res = f"Generated {fname}"
-                                    
-                                elif fn_name == "provision_it_hardware":
-                                    time.sleep(1)
-                                    res = provision_it_hardware(**args)
-                                    st.success(f"Hardware Ordered: {res['ticket_id']}")
-                                    st.json(res)
-                                    tool_res = json.dumps(res)
-                                    
-                                elif fn_name == "schedule_welcome_lunch":
-                                    time.sleep(1)
-                                    res = schedule_welcome_lunch(**args)
-                                    st.success("Calendar Event Created")
-                                    st.info(f"{res['time']} @ {res['location']}")
-                                    tool_res = json.dumps(res)
-                                    
-                                else:
-                                    tool_res = "Error: Skill not found"
-
-                                # Save Tool Result
-                                st.session_state.messages.append({
-                                    "tool_call_id": tool_call['id'],
-                                    "role": "tool",
-                                    "name": fn_name,
-                                    "content": tool_res
-                                })
-                        
-                        # Final Wrap-up
-                        final_res = get_llm_response(st.session_state.messages, api_key)
-                        if final_res and final_res.content:
-                            st.write(final_res.content)
-                            st.session_state.messages.append(final_res.model_dump())
-
-                    # Standard Text Response
-                    elif msg_data.get("content"):
-                        st.write(msg_data["content"])
-                        st.session_state.messages.append(msg_data)
+                **1. Key Achievements**
+                * [ ] Met project deadlines
+                * [ ] Technical leadership
+                
+                **2. Areas for Growth**
+                * [ ] Public speaking
+                * [ ] Documentation
+                
+                *(Template generated by AI)*
+                """)
+                
+    elif menu == "Analytics":
+        st.markdown("## 📈 Deep Analytics")
+        # Mock Attrition Data
+        dates = pd.date_range(start='2024-01-01', periods=12, freq='M')
+        attrition = [2, 1, 3, 0, 1, 2, 4, 1, 2, 1, 0, 1]
+        df_att = pd.DataFrame({'Date': dates, 'Exits': attrition})
+        
+        fig = px.bar(df_att, x='Date', y='Exits', title="Monthly Attrition Trend", color_discrete_sequence=[COLOR_SECONDARY])
+        st.plotly_chart(fig, use_container_width=True)
+        
+    elif menu == "Settings":
+        st.markdown("## ⚙️ System Configuration")
+        st.toggle("Dark Mode (Beta)")
+        st.toggle("Email Notifications")
+        st.text_input("Update API Key", type="password", value=api_key)
 
 if __name__ == "__main__":
     main()
