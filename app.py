@@ -2604,23 +2604,15 @@ def main():
     current_function = page_mapping.get(st.session_state.current_page, show_dashboard)
     current_function()
     
-   # Footer
-st.markdown("<br><br>", unsafe_allow_html=True)
-st.markdown("---")
-st.markdown("""
-<div style="text-align: center; color: #94a3b8; font-size: 13px; padding: 1rem;">
-    <p><strong>TalentPilot</strong> - AI-Powered HR Orchestration System</p>
-    <p style="margin-top: 0.5rem;">Built with ❤️ by <strong>cybe4sent1nel(FAHAD KHAN)</strong></p>
-    <p style="margin-top: 0.5rem;">🎮 Demo Mode Active - Explore all features with sample data</p>
-</div>
-""", unsafe_allow_html=True)
-
-# Example: Department badge (replace or loop as needed)
-for emp in st.session_state.employees:
-    st.markdown(f"""
-    <span style="background: #dbeafe; color: #1e40af; border-radius: 12px; font-size: 12px; font-weight: 600; padding: 0.25rem 0.75rem;">
-        {emp['department']}
-    </span>
+    # Footer - MOVED INSIDE main() function
+    st.markdown("<br><br>", unsafe_allow_html=True)
+    st.markdown("---")
+    st.markdown("""
+    <div style="text-align: center; color: #94a3b8; font-size: 13px; padding: 1rem;">
+        <p><strong>TalentPilot</strong> - AI-Powered HR Orchestration System</p>
+        <p style="margin-top: 0.5rem;">Built with ❤️ by <strong>cybe4sent1nel(FAHAD KHAN)</strong></p>
+        <p style="margin-top: 0.5rem;">🎮 Demo Mode Active - Explore all features with sample data</p>
+    </div>
     """, unsafe_allow_html=True)
 
 # Run the application
