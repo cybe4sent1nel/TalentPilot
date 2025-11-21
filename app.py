@@ -2616,11 +2616,12 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Example: Department badge (replace or loop as needed)
-st.markdown(f"""
-<span style="background: #dbeafe; color: #1e40af; border-radius: 12px; font-size: 12px; font-weight: 600; padding: 0.25rem 0.75rem;">
-    {emp['department']}
-</span>
-""", unsafe_allow_html=True)
+for emp in st.session_state.employees:
+    st.markdown(f"""
+    <span style="background: #dbeafe; color: #1e40af; border-radius: 12px; font-size: 12px; font-weight: 600; padding: 0.25rem 0.75rem;">
+        {emp['department']}
+    </span>
+    """, unsafe_allow_html=True)
 
 # Run the application
 if __name__ == "__main__":
