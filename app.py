@@ -1701,7 +1701,7 @@ def show_employee_profile(employee):
 # Recruitment Page (Enhanced)
 def show_recruitment():
     """Enhanced recruitment module with applicant tracking"""
-    st.markdown(f"## 👥 Recruitment Hub {'<span class='demo-badge'>DEMO MODE</span>' if st.session_state.demo_mode else ''}", unsafe_allow_html=True)
+    st.markdown(f"## 👥 Recruitment Hub {'<span class="demo-badge">DEMO MODE</span>' if st.session_state.demo_mode else ''}", unsafe_allow_html=True)
     st.markdown("AI-powered hiring and candidate management")
     
     st.markdown("<br>", unsafe_allow_html=True)
@@ -2090,7 +2090,7 @@ def show_recruitment():
 # Tasks Management Page
 def show_tasks():
     """Task management and to-do list"""
-    st.markdown(f"## 📋 Task Management {'<span class='demo-badge'>DEMO MODE</span>' if st.session_state.demo_mode else ''}", unsafe_allow_html=True)
+    st.markdown(f"## 📋 Task Management {'<span class="demo-badge">DEMO MODE</span>' if st.session_state.demo_mode else ''}", unsafe_allow_html=True)
     st.markdown("Manage your HR tasks and priorities")
     
     st.markdown("<br>", unsafe_allow_html=True)
@@ -2177,7 +2177,7 @@ def show_tasks():
 # AI Assistant Page
 def show_ai_assistant():
     """Interactive AI assistant with chat interface"""
-    st.markdown(f"## 💬 AI Assistant {'<span class='demo-badge'>DEMO MODE</span>' if st.session_state.demo_mode else ''}", unsafe_allow_html=True)
+    st.markdown(f"## 💬 AI Assistant {'<span class="demo-badge">DEMO MODE</span>' if st.session_state.demo_mode else ''}", unsafe_allow_html=True)
     st.markdown("Your intelligent HR co-pilot powered by advanced AI")
     
     st.markdown("<br>", unsafe_allow_html=True)
@@ -2259,7 +2259,7 @@ def show_ai_assistant():
 # Additional placeholder modules for completeness
 def show_onboarding():
     """Onboarding module"""
-    st.markdown(f"## 📋 Onboarding {'<span class='demo-badge'>DEMO MODE</span>' if st.session_state.demo_mode else ''}", unsafe_allow_html=True)
+    st.markdown(f"## 📋 Onboarding {'<span class="demo-badge">DEMO MODE</span>' if st.session_state.demo_mode else ''}", unsafe_allow_html=True)
     st.markdown("Create seamless onboarding experiences")
     
     st.markdown("<br>", unsafe_allow_html=True)
@@ -2313,7 +2313,7 @@ def show_onboarding():
 
 def show_performance():
     """Performance management module"""
-    st.markdown(f"## 🎯 Performance Reviews {'<span class='demo-badge'>DEMO MODE</span>' if st.session_state.demo_mode else ''}", unsafe_allow_html=True)
+    st.markdown(f"## 🎯 Performance Reviews {'<span class="demo-badge">DEMO MODE</span>' if st.session_state.demo_mode else ''}", unsafe_allow_html=True)
     st.markdown("360-degree feedback and goal tracking")
     
     st.markdown("<br>", unsafe_allow_html=True)
@@ -2394,7 +2394,7 @@ def show_performance():
 
 def show_training():
     """Training and development module"""
-    st.markdown(f"## 🎓 Training & Development {'<span class='demo-badge'>DEMO MODE</span>' if st.session_state.demo_mode else ''}", unsafe_allow_html=True)
+    st.markdown(f"## 🎓 Training & Development {'<span class="demo-badge">DEMO MODE</span>' if st.session_state.demo_mode else ''}", unsafe_allow_html=True)
     st.markdown("Build skills and grow your team")
     
     st.markdown("<br>", unsafe_allow_html=True)
@@ -2449,7 +2449,7 @@ def show_training():
 
 def show_compensation():
     """Compensation module"""
-    st.markdown(f"## 💰 Compensation {'<span class='demo-badge'>DEMO MODE</span>' if st.session_state.demo_mode else ''}", unsafe_allow_html=True)
+    st.markdown(f"## 💰 Compensation {'<span class="demo-badge">DEMO MODE</span>' if st.session_state.demo_mode else ''}", unsafe_allow_html=True)
     st.markdown("Salary benchmarking and benefits")
     
     st.markdown("<br>", unsafe_allow_html=True)
@@ -2478,7 +2478,7 @@ def show_compensation():
 
 def show_leave():
     """Leave management"""
-    st.markdown(f"## 📅 Leave Management {'<span class='demo-badge'>DEMO MODE</span>' if st.session_state.demo_mode else ''}", unsafe_allow_html=True)
+    st.markdown(f"## 📅 Leave Management {'<span class="demo-badge">DEMO MODE</span>' if st.session_state.demo_mode else ''}", unsafe_allow_html=True)
     st.markdown("Track and manage time off")
     
     st.markdown("<br>", unsafe_allow_html=True)
@@ -2495,7 +2495,7 @@ def show_leave():
 
 def show_offboarding():
     """Offboarding module"""
-    st.markdown(f"## 🚪 Offboarding {'<span class='demo-badge'>DEMO MODE</span>' if st.session_state.demo_mode else ''}", unsafe_allow_html=True)
+    st.markdown(f"## 🚪 Offboarding {'<span class="demo-badge">DEMO MODE</span>' if st.session_state.demo_mode else ''}", unsafe_allow_html=True)
     st.markdown("Smooth transitions for departing employees")
     
     st.markdown("<br>", unsafe_allow_html=True)
@@ -2522,7 +2522,7 @@ def show_offboarding():
 
 def show_analytics():
     """Analytics and reporting"""
-    st.markdown(f"## 📊 Analytics {'<span class='demo-badge'>DEMO MODE</span>' if st.session_state.demo_mode else ''}", unsafe_allow_html=True)
+    st.markdown(f"## 📊 Analytics {'<span class="demo-badge">DEMO MODE</span>' if st.session_state.demo_mode else ''}", unsafe_allow_html=True)
     st.markdown("Data-driven workforce insights")
     
     st.markdown("<br>", unsafe_allow_html=True)
