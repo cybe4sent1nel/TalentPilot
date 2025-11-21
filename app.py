@@ -1540,8 +1540,8 @@ def show_dashboard():
 # Employee Directory Page
 def show_employee_directory():
     """Display comprehensive employee directory"""
-    st.markdown(f"## 💼 Employee Directory {'<span class='demo-badge'>DEMO MODE</span>' if st.session_state.demo_mode else ''}", unsafe_allow_html=True)
-    st.markdown("Manage and view all employee information")
+    st.markdown(f"## 💼 Employee Directory {'<span class=\"demo-badge\">DEMO MODE</span>' if st.session_state.demo_mode else ''}", unsafe_allow_html=True)
+st.markdown("Manage and view all employee information")
     
     st.markdown("<br>", unsafe_allow_html=True)
     
