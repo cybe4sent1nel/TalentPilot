@@ -1,0 +1,10 @@
+{
+  "/(public-pages)/page": "/",
+  "/_not-found/page": "/_not-found",
+  "/apple-icon.png/route": "/apple-icon.png",
+  "/chat/page": "/chat",
+  "/favicon.ico/route": "/favicon.ico",
+  "/icon0.svg/route": "/icon0.svg",
+  "/icon1.png/route": "/icon1.png",
+  "/manifest.json/route": "/manifest.json"
+}

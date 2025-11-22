@@ -1,0 +1,181 @@
+================================================================================
+TALENTPILOT - READY-TO-USE SAMPLE PROMPTS FOR DEMO
+================================================================================
+
+COPY ANY OF THESE PROMPTS AND PASTE INTO THE CHAT TO START A DEMO CONVERSATION
+
+================================================================================
+CATEGORY 1: RECRUITMENT & TALENT ACQUISITION
+================================================================================
+
+1. "What are the most common job titles in our current applicant pipeline?"
+
+2. "Analyze our recruitment data - what's the average years of experience for applicants?"
+
+3. "Show me a summary of applicant statuses - how many are interviewing vs offered?"
+
+4. "What's the salary range expectations from our current candidates?"
+
+================================================================================
+CATEGORY 2: EMPLOYEE MANAGEMENT & ANALYTICS
+================================================================================
+
+5. "What are the top performing departments based on employee performance scores?"
+
+6. "Analyze our employee data - what's the breakdown by employment type?"
+
+7. "Show me trends in employee tenure and retention"
+
+8. "Which divisions have the highest concentration of employees?"
+
+================================================================================
+CATEGORY 3: TRAINING & DEVELOPMENT
+================================================================================
+
+9. "What training programs have the highest completion rates?"
+
+10. "Analyze training outcomes - which types of training are most effective?"
+
+11. "Which departments have invested most in employee training?"
+
+12. "Show me the ROI of our training programs based on program type and outcome"
+
+================================================================================
+CATEGORY 4: EMPLOYEE ENGAGEMENT & CULTURE
+================================================================================
+
+13. "What's the overall employee engagement score trend?"
+
+14. "Analyze work-life balance scores across the organization"
+
+15. "Which departments have the highest satisfaction scores?"
+
+16. "Provide insights on employee engagement patterns and recommendations"
+
+================================================================================
+CATEGORY 5: STRATEGIC HR GUIDANCE
+================================================================================
+
+17. "Help me design a talent acquisition strategy for high-growth roles"
+
+18. "What are best practices for improving employee engagement?"
+
+19. "Draft a performance improvement plan template for underperforming employees"
+
+20. "Create a competitive compensation strategy for our organization"
+
+================================================================================
+BONUS - ADVANCED STRATEGIC PROMPTS
+================================================================================
+
+21. "What's our employee cost per hire and how does it compare to industry benchmarks?"
+
+22. "Create a 90-day onboarding plan for a new senior manager in the Sales division"
+
+23. "Analyze our training budget efficiency - where should we invest more or less?"
+
+24. "Design an employee retention strategy based on our engagement survey data"
+
+25. "What skills gaps do we have in our engineering team and how should we address them?"
+
+26. "Help me prepare for our annual HR strategy meeting with data-driven insights"
+
+27. "Create a compensation equity analysis for our management team"
+
+28. "Design a career development path for high-performing individual contributors"
+
+================================================================================
+HOW TO USE THESE PROMPTS IN THE DEMO
+================================================================================
+
+1. Open TalentPilot chat at: http://localhost:3000/chat
+
+2. You'll see sample prompts displayed on the chat start screen
+
+3. Either:
+   a) Click on any pre-displayed sample prompt, OR
+   b) Copy-paste any prompt from this file into the chat input box
+
+4. Press Send (or click the send button)
+
+5. TalentPilot will analyze your organizational data and provide insights
+
+6. Ask follow-up questions naturally - the conversation will continue
+
+================================================================================
+EXPECTED RESPONSE PATTERNS
+================================================================================
+
+For Recruitment Questions:
+- Statistics about applicants (count, avg salary, experience)
+- Breakdown by job title or status
+- Recommendations for hiring strategy
+- Salary benchmarking advice
+
+For Employee Analytics:
+- Department-level insights
+- Performance breakdowns
+- Tenure and turnover data
+- Demographic analysis
+
+For Training Questions:
+- Program effectiveness metrics
+- Completion rates and success rates
+- ROI calculations
+- Training investment breakdown
+
+For Engagement Questions:
+- Survey score trends
+- Department comparisons
+- Work-life balance insights
+- Actionable recommendations
+
+For Strategic Questions:
+- Comprehensive strategies
+- Best practice frameworks
+- Templates and action plans
+- Market context and benchmarks
+
+================================================================================
+QUICK DEMO FLOW (15 MINUTES)
+================================================================================
+
+1. (2 min) Set up: Add API key to .env.local and restart server
+2. (1 min) Navigate to /chat and see the interface
+3. (3 min) Try prompt #1 or #13 to see basic data analysis
+4. (3 min) Try prompt #17 to see strategic guidance
+5. (3 min) Ask a custom follow-up question
+6. (3 min) Discuss features and capabilities
+
+Total: Impressive 15-minute demo of TalentPilot capabilities!
+
+================================================================================
+TECHNICAL NOTES
+================================================================================
+
+- These prompts work with the knowledge base CSV files already integrated
+- Responses are powered by IBM WatsonX (kwaipilot/kat-coder-pro:free)
+- Temperature set to 0.7 for balanced analytical responses
+- Max tokens set to 2048 for detailed answers
+- All responses are non-sensitive demo data from CSV files
+
+================================================================================
+CUSTOMIZATION FOR SPECIFIC ORGS
+================================================================================
+
+You can customize any prompt by adding your organization's context:
+
+Examples:
+- "What's the average salary expectation... in the [YOUR COMPANY] pipeline?"
+- "Which departments in [YOUR COMPANY] have invested most in training?"
+- "Help me design a talent acquisition strategy for [YOUR SPECIFIC ROLES]"
+
+================================================================================
+
+For more detailed setup instructions, see: SETUP.md
+For full demo guide with examples, see: TALENTPILOT_DEMO.md
+For technical implementation details, see: IMPLEMENTATION_SUMMARY.md
+
+Ready to demo? Start with prompt #1, #13, or #17!
+
+================================================================================

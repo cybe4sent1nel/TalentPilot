@@ -1,0 +1,37 @@
+@import "tailwindcss";
+
+@theme {
+    --font-sans: 'Poppins', sans-serif;
+}
+
+body {
+    @apply bg-black text-white text-sm antialiased;
+}
+
+@layer components {
+    .glass {
+        @apply bg-white/10 border border-white/20;
+    }
+
+    .btn {
+        @apply cursor-pointer rounded-full px-8 py-2.5 font-medium text-white transition hover:opacity-90 active:scale-98;
+    }
+}
+
+/* Custom scrollbar styling */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+}

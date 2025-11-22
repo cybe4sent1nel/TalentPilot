@@ -1,0 +1,1 @@
+{"version":3,"sources":["turbopack:///[project]/Downloads/frontend/app/apple-icon.png.mjs (structured image object)"],"sourcesContent":["import src from \"IMAGE\";\nexport default { src, width: 180, height: 180 }\n"],"names":[],"mappings":"kIACe,CAAE,IADjB,AACiB,EADjB,CAAA,CAAA,OACiB,OAAG,CAAE,MAAO,IAAK,OAAQ,GAAI"}

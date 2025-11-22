@@ -1,0 +1,1 @@
+{"version":3,"sources":["turbopack:///[project]/Downloads/frontend/app/favicon.ico.mjs (structured image object)"],"sourcesContent":["import src from \"IMAGE\";\nexport default { src, width: 48, height: 48 }\n"],"names":[],"mappings":"+HACe,CAAE,IADjB,AACiB,EADjB,CAAA,CAAA,OACiB,OAAG,CAAE,MAAO,GAAI,OAAQ,EAAG"}

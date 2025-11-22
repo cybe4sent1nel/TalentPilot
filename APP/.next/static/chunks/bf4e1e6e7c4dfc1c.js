@@ -1,0 +1,1 @@
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,5074,t=>{"use strict";t.s(["default",()=>n]);var e=t.i(58196);function n(){return(0,e.useEffect)(()=>{let t=document.documentElement,e=t.getAttribute("style");return window.lenis&&window.lenis.destroy(),()=>{e&&t.setAttribute("style",e)}},[]),null}}]);
