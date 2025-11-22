@@ -117,7 +117,7 @@ export default function ChatPage() {
         } catch (error) {
             const errorMessage = {
                 id: messages.length + 2,
-                text: `Error: ${error.message}. Please make sure your OpenRouter API key is configured in environment variables.`,
+                text: `Error: ${error.message}. Please make sure your WATSON API key is configured in environment variables.`,
                 sender: 'bot',
                 timestamp: new Date(),
             };
