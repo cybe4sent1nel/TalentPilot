@@ -1,7 +1,7 @@
 ﻿node_modules/
-*.log
 .next/
 dist/
 build/
+*.log
 .env
 .DS_Store
