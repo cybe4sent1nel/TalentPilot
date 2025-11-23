@@ -55,17 +55,45 @@ export async function POST(request) {
         results = dataLoader.getEmployeesByDepartment(searchParams.department);
         break;
 
-      case 'get_training_by_employee':
-        // get_training_by_employee with { firstName, lastName }
-        results = dataLoader.getTrainingByEmployee(
+      case 'get_training_by_employee_id':
+        // get_training_by_employee_id with { employeeId }
+        results = dataLoader.getTrainingByEmployeeId(searchParams.employeeId);
+        break;
+
+      case 'get_training_by_employee_name':
+        // get_training_by_employee_name with { firstName, lastName }
+        results = dataLoader.getTrainingByEmployeeName(
           searchParams.firstName,
           searchParams.lastName
         );
         break;
 
-      case 'get_engagement_by_employee':
-        // get_engagement_by_employee with { employeeId }
-        results = dataLoader.getEngagementByEmployee(searchParams.employeeId);
+      case 'get_engagement_by_employee_id':
+        // get_engagement_by_employee_id with { employeeId }
+        results = dataLoader.getEngagementByEmployeeId(searchParams.employeeId);
+        break;
+
+      case 'get_engagement_by_employee_name':
+        // get_engagement_by_employee_name with { firstName, lastName }
+        results = dataLoader.getEngagementByEmployeeName(
+          searchParams.firstName,
+          searchParams.lastName
+        );
+        break;
+
+      case 'get_top_training_programs':
+        // get_top_training_programs with optional { limit }
+        results = dataLoader.getTopTrainingPrograms(searchParams.limit || 5);
+        break;
+
+      case 'get_training_statistics':
+        // No params needed
+        results = dataLoader.getTrainingStatistics();
+        break;
+
+      case 'get_engagement_statistics':
+        // No params needed
+        results = dataLoader.getEngagementStatistics();
         break;
 
       case 'get_summary':

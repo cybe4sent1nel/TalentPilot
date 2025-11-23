@@ -54,12 +54,32 @@ export async function getEmployeesByDepartment(department) {
   return queryKnowledgeBase('get_employees_by_department', { department });
 }
 
-export async function getTrainingByEmployee(firstName, lastName) {
-  return queryKnowledgeBase('get_training_by_employee', { firstName, lastName });
+export async function getTrainingByEmployeeId(employeeId) {
+  return queryKnowledgeBase('get_training_by_employee_id', { employeeId });
 }
 
-export async function getEngagementByEmployee(employeeId) {
-  return queryKnowledgeBase('get_engagement_by_employee', { employeeId });
+export async function getTrainingByEmployeeName(firstName, lastName) {
+  return queryKnowledgeBase('get_training_by_employee_name', { firstName, lastName });
+}
+
+export async function getEngagementByEmployeeId(employeeId) {
+  return queryKnowledgeBase('get_engagement_by_employee_id', { employeeId });
+}
+
+export async function getEngagementByEmployeeName(firstName, lastName) {
+  return queryKnowledgeBase('get_engagement_by_employee_name', { firstName, lastName });
+}
+
+export async function getTopTrainingPrograms(limit = 5) {
+  return queryKnowledgeBase('get_top_training_programs', { limit });
+}
+
+export async function getTrainingStatistics() {
+  return queryKnowledgeBase('get_training_statistics');
+}
+
+export async function getEngagementStatistics() {
+  return queryKnowledgeBase('get_engagement_statistics');
 }
 
 export async function getKnowledgeBaseSummary() {
