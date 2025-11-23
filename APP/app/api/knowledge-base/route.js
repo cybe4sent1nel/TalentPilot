@@ -96,6 +96,45 @@ export async function POST(request) {
         results = dataLoader.getEngagementStatistics();
         break;
 
+      case 'get_applicants_for_existing_roles':
+        // No params needed
+        results = dataLoader.getApplicantsForExistingRoles();
+        break;
+
+      case 'get_applicants_by_salary_range':
+        // get_applicants_by_salary_range with { minSalary, maxSalary }
+        results = dataLoader.getApplicantsBySalaryRange(
+          searchParams.minSalary,
+          searchParams.maxSalary
+        );
+        break;
+
+      case 'get_recruitment_metrics':
+        // No params needed
+        results = dataLoader.getRecruitmentMetrics();
+        break;
+
+      case 'get_employee_metrics':
+        // No params needed
+        results = dataLoader.getEmployeeMetrics();
+        break;
+
+      case 'get_applicant_profile':
+        // get_applicant_profile with { firstName, lastName }
+        results = dataLoader.getApplicantProfile(
+          searchParams.firstName,
+          searchParams.lastName
+        );
+        break;
+
+      case 'get_employee_profile':
+        // get_employee_profile with { firstName, lastName }
+        results = dataLoader.getEmployeeProfile(
+          searchParams.firstName,
+          searchParams.lastName
+        );
+        break;
+
       case 'get_summary':
         // No params needed
         results = dataLoader.getSummary();

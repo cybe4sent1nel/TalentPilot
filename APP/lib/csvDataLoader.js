@@ -289,17 +289,145 @@ class CSVDataLoader {
     return stats;
   }
 
+  // Cross-reference: Get applicants matching specific job titles in employee dataset
+  getApplicantsForExistingRoles() {
+    if (!this.recruitment || !this.employees) return [];
+
+    const employeeJobTitles = new Set(this.employees.map((e) => e['Title']));
+    return this.recruitment.filter((app) =>
+      employeeJobTitles.has(app['Job Title'])
+    );
+  }
+
+  // Cross-reference: Get applicants by salary expectation
+  getApplicantsBySalaryRange(minSalary, maxSalary) {
+    if (!this.recruitment) return [];
+
+    return this.recruitment.filter((app) => {
+      const salary = parseFloat(app['Desired Salary']) || 0;
+      return salary >= minSalary && salary <= maxSalary;
+    });
+  }
+
+  // Cross-reference: Get applicant pipeline metrics
+  getRecruitmentMetrics() {
+    if (!this.recruitment) return {};
+
+    const statusCounts = this.getStatusCounts();
+    const totalApplicants = this.recruitment.length;
+    const avgSalaryExpectation =
+      this.recruitment.reduce((sum, app) => {
+        return sum + (parseFloat(app['Desired Salary']) || 0);
+      }, 0) / totalApplicants;
+
+    const avgExperience =
+      this.recruitment.reduce((sum, app) => {
+        return sum + (parseInt(app['Years of Experience']) || 0);
+      }, 0) / totalApplicants;
+
+    return {
+      total: totalApplicants,
+      byStatus: statusCounts,
+      averageSalaryExpectation: avgSalaryExpectation.toFixed(2),
+      averageYearsExperience: avgExperience.toFixed(1),
+    };
+  }
+
+  // Cross-reference: Get employee statistics
+  getEmployeeMetrics() {
+    if (!this.employees) return {};
+
+    const activeCount = this.employees.filter(
+      (e) => e['EmployeeStatus'] === 'Active'
+    ).length;
+    const departmentCounts = this.getDepartmentCounts();
+
+    const avgPerformance =
+      this.employees.reduce((sum, emp) => {
+        const score = emp['Performance Score'];
+        // Convert performance ratings to numeric values
+        const scoreMap = {
+          'Exceeds': 5,
+          'Fully Meets': 4,
+          'Partially Meets': 3,
+          'Needs Improvement': 2,
+        };
+        return sum + (scoreMap[score] || 0);
+      }, 0) / this.employees.length;
+
+    return {
+      total: this.employees.length,
+      active: activeCount,
+      byDepartment: departmentCounts,
+      averagePerformanceScore: avgPerformance.toFixed(2),
+    };
+  }
+
+  // Get detailed applicant profile
+  getApplicantProfile(firstName, lastName) {
+    const applicant = this.searchApplicant(firstName, lastName);
+    if (!applicant) return null;
+
+    return {
+      basicInfo: {
+        name: `${applicant['First Name']} ${applicant['Last Name']}`,
+        applicantId: applicant['Applicant ID'],
+        email: applicant['Email'],
+        phone: applicant['Phone Number'],
+        location: `${applicant['City']}, ${applicant['State']}`,
+      },
+      jobInfo: {
+        targetPosition: applicant['Job Title'],
+        desiredSalary: applicant['Desired Salary'],
+        yearsExperience: applicant['Years of Experience'],
+        educationLevel: applicant['Education Level'],
+        applicationDate: applicant['Application Date'],
+      },
+      status: {
+        currentStatus: applicant['Status'],
+      },
+    };
+  }
+
+  // Get detailed employee profile
+  getEmployeeProfile(firstName, lastName) {
+    const employee = this.searchEmployee(firstName, lastName);
+    if (!employee) return null;
+
+    return {
+      basicInfo: {
+        name: `${employee['FirstName']} ${employee['LastName']}`,
+        employeeId: employee['EmpID'],
+        email: employee['ADEmail'],
+        dateOfBirth: employee['DOB'],
+        state: employee['State'],
+      },
+      jobInfo: {
+        title: employee['Title'],
+        department: employee['DepartmentType'],
+        division: employee['Division'],
+        supervisor: employee['Supervisor'],
+        businessUnit: employee['BusinessUnit'],
+      },
+      employment: {
+        status: employee['EmployeeStatus'],
+        type: employee['EmployeeType'],
+        startDate: employee['StartDate'],
+        exitDate: employee['ExitDate'],
+        payZone: employee['PayZone'],
+      },
+      performance: {
+        score: employee['Performance Score'],
+        rating: employee['Current Employee Rating'],
+      },
+    };
+  }
+
   // Get summary statistics
   getSummary() {
     return {
-      recruitment: {
-        total: this.recruitment?.length || 0,
-        byStatus: this.getStatusCounts(),
-      },
-      employees: {
-        total: this.employees?.length || 0,
-        byDepartment: this.getDepartmentCounts(),
-      },
+      recruitment: this.getRecruitmentMetrics(),
+      employees: this.getEmployeeMetrics(),
       training: {
         total: this.training?.length || 0,
       },
