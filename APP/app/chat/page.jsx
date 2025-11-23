@@ -5,6 +5,16 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { sendMessage } from '@/lib/openrouter';
 import { samplePrompts } from '@/lib/samplePrompts';
+import {
+  searchApplicant,
+  searchApplicantsByJobTitle,
+  getCommonJobTitles,
+  getApplicantsByStatus,
+  searchEmployee,
+  getEmployeesByDepartment,
+  getTrainingByEmployee,
+  getKnowledgeBaseSummary,
+} from '@/lib/knowledgeBaseHelper';
 
 export default function ChatPage() {
     const [messages, setMessages] = useState([
@@ -93,6 +103,62 @@ export default function ChatPage() {
         setShowSamples(false);
 
         try {
+            // Check if the query requires knowledge base lookup
+            let kbContext = '';
+            const inputLower = input.toLowerCase();
+
+            // Pattern matching for knowledge base queries
+            if (
+                inputLower.includes('applicant') ||
+                inputLower.includes('candidate') ||
+                inputLower.includes('recruiting') ||
+                inputLower.includes('application status')
+            ) {
+                try {
+                    // Try to extract name for applicant search
+                    const nameMatch = input.match(/(\w+)\s+(\w+)/);
+                    if (nameMatch && !inputLower.includes('common') && !inputLower.includes('trend')) {
+                        const firstName = nameMatch[1];
+                        const lastName = nameMatch[2];
+                        const applicantData = await searchApplicant(firstName, lastName);
+                        if (applicantData) {
+                            kbContext = `\n\n[From Knowledge Base - Applicant Record]\nApplicant Name: ${applicantData['First Name']} ${applicantData['Last Name']}\nApplicant ID: ${applicantData['Applicant ID']}\nJob Title: ${applicantData['Job Title']}\nStatus: ${applicantData['Status']}\nDesired Salary: ${applicantData['Desired Salary']}\nYears of Experience: ${applicantData['Years of Experience']}\nEducation Level: ${applicantData['Education Level']}\nApplication Date: ${applicantData['Application Date']}`;
+                        }
+                    }
+
+                    // Check for job title trend queries
+                    if (inputLower.includes('common') && inputLower.includes('job')) {
+                        const jobTitles = await getCommonJobTitles();
+                        const topTitles = jobTitles.slice(0, 5)
+                            .map((t) => `${t.title} (${t.count})`)
+                            .join(', ');
+                        kbContext = `\n\n[From Knowledge Base - Top Job Titles]\n${topTitles}`;
+                    }
+                } catch (kbError) {
+                    console.warn('Knowledge base query failed:', kbError);
+                }
+            }
+
+            if (
+                inputLower.includes('employee') ||
+                inputLower.includes('staff') ||
+                inputLower.includes('team member')
+            ) {
+                try {
+                    const nameMatch = input.match(/(\w+)\s+(\w+)/);
+                    if (nameMatch && !inputLower.includes('training') && !inputLower.includes('department')) {
+                        const firstName = nameMatch[1];
+                        const lastName = nameMatch[2];
+                        const employeeData = await searchEmployee(firstName, lastName);
+                        if (employeeData) {
+                            kbContext = `\n\n[From Knowledge Base - Employee Record]\nEmployee Name: ${employeeData['FirstName']} ${employeeData['LastName']}\nEmployee ID: ${employeeData['EmpID']}\nTitle: ${employeeData['Title']}\nDepartment: ${employeeData['DepartmentType']}\nStatus: ${employeeData['EmployeeStatus']}\nPerformance Score: ${employeeData['Performance Score']}`;
+                        }
+                    }
+                } catch (kbError) {
+                    console.warn('Knowledge base query failed:', kbError);
+                }
+            }
+
             const apiMessages = messages
                 .filter(m => m.id > 1)
                 .map(m => ({
@@ -102,7 +168,7 @@ export default function ChatPage() {
             
             apiMessages.push({
                 role: 'user',
-                content: input,
+                content: input + kbContext,
             });
 
             const response = await sendMessage(apiMessages);
@@ -117,7 +183,7 @@ export default function ChatPage() {
         } catch (error) {
             const errorMessage = {
                 id: messages.length + 2,
-                text: `Error: ${error.message}. Please make sure your WATSON API key is configured in environment variables.`,
+                text: `Error: ${error.message}. Please make sure your OpenRouter API key is configured in environment variables.`,
                 sender: 'bot',
                 timestamp: new Date(),
             };
