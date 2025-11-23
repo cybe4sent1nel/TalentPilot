@@ -82,6 +82,33 @@ export async function getEngagementStatistics() {
   return queryKnowledgeBase('get_engagement_statistics');
 }
 
+export async function getApplicantsForExistingRoles() {
+  return queryKnowledgeBase('get_applicants_for_existing_roles');
+}
+
+export async function getApplicantsBySalaryRange(minSalary, maxSalary) {
+  return queryKnowledgeBase('get_applicants_by_salary_range', {
+    minSalary,
+    maxSalary,
+  });
+}
+
+export async function getRecruitmentMetrics() {
+  return queryKnowledgeBase('get_recruitment_metrics');
+}
+
+export async function getEmployeeMetrics() {
+  return queryKnowledgeBase('get_employee_metrics');
+}
+
+export async function getApplicantProfile(firstName, lastName) {
+  return queryKnowledgeBase('get_applicant_profile', { firstName, lastName });
+}
+
+export async function getEmployeeProfile(firstName, lastName) {
+  return queryKnowledgeBase('get_employee_profile', { firstName, lastName });
+}
+
 export async function getKnowledgeBaseSummary() {
   return queryKnowledgeBase('get_summary');
 }

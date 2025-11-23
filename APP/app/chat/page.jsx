@@ -19,6 +19,12 @@ import {
   getTopTrainingPrograms,
   getTrainingStatistics,
   getEngagementStatistics,
+  getApplicantsForExistingRoles,
+  getApplicantsBySalaryRange,
+  getRecruitmentMetrics,
+  getEmployeeMetrics,
+  getApplicantProfile,
+  getEmployeeProfile,
   getKnowledgeBaseSummary,
 } from '@/lib/knowledgeBaseHelper';
 
@@ -123,12 +129,41 @@ export default function ChatPage() {
                 try {
                     // Try to extract name for applicant search
                     const nameMatch = input.match(/(\w+)\s+(\w+)/);
-                    if (nameMatch && !inputLower.includes('common') && !inputLower.includes('trend')) {
+                    if (nameMatch && !inputLower.includes('common') && !inputLower.includes('trend') && !inputLower.includes('salary') && !inputLower.includes('metric') && !inputLower.includes('pipeline')) {
                         const firstName = nameMatch[1];
                         const lastName = nameMatch[2];
-                        const applicantData = await searchApplicant(firstName, lastName);
-                        if (applicantData) {
-                            kbContext = `\n\n[From Knowledge Base - Applicant Record]\nApplicant Name: ${applicantData['First Name']} ${applicantData['Last Name']}\nApplicant ID: ${applicantData['Applicant ID']}\nJob Title: ${applicantData['Job Title']}\nStatus: ${applicantData['Status']}\nDesired Salary: ${applicantData['Desired Salary']}\nYears of Experience: ${applicantData['Years of Experience']}\nEducation Level: ${applicantData['Education Level']}\nApplication Date: ${applicantData['Application Date']}`;
+                        const applicantProfile = await getApplicantProfile(firstName, lastName);
+                        if (applicantProfile) {
+                            const bp = applicantProfile.basicInfo;
+                            const jp = applicantProfile.jobInfo;
+                            kbContext = `\n\n[From Knowledge Base - Applicant Profile]\nName: ${bp.name}\nID: ${bp.applicantId}\nEmail: ${bp.email}\nLocation: ${bp.location}\n\nTarget Position: ${jp.targetPosition}\nDesired Salary: $${jp.desiredSalary}\nExperience: ${jp.yearsExperience} years\nEducation: ${jp.educationLevel}\nStatus: ${applicantProfile.status.currentStatus}\nApplication Date: ${jp.applicationDate}`;
+                        }
+                    }
+
+                    // Recruitment metrics/pipeline overview
+                    if (inputLower.includes('pipeline') || inputLower.includes('metric') || inputLower.includes('overview')) {
+                        const metrics = await getRecruitmentMetrics();
+                        if (metrics.total) {
+                            const statuses = Object.entries(metrics.byStatus)
+                                .map(([k, v]) => `${k}: ${v}`)
+                                .join(', ');
+                            kbContext = `\n\n[From Knowledge Base - Recruitment Pipeline]\nTotal Applicants: ${metrics.total}\nBy Status: ${statuses}\nAvg Salary Expectation: $${metrics.averageSalaryExpectation}\nAvg Experience: ${metrics.averageYearsExperience} years`;
+                        }
+                    }
+
+                    // Salary range queries
+                    if (inputLower.includes('salary') && (inputLower.includes('range') || inputLower.includes('between'))) {
+                        const salaryMatch = input.match(/(\d+).*?(\d+)/);
+                        if (salaryMatch) {
+                            const minSalary = parseFloat(salaryMatch[1]);
+                            const maxSalary = parseFloat(salaryMatch[2]);
+                            const applicants = await getApplicantsBySalaryRange(minSalary, maxSalary);
+                            if (applicants.length > 0) {
+                                const appList = applicants.slice(0, 3)
+                                    .map((a) => `${a['First Name']} ${a['Last Name']} (${a['Job Title']})`)
+                                    .join(', ');
+                                kbContext = `\n\n[From Knowledge Base - Applicants in Salary Range]\n${applicants.length} applicants found\nExamples: ${appList}`;
+                            }
                         }
                     }
 
@@ -152,12 +187,27 @@ export default function ChatPage() {
             ) {
                 try {
                     const nameMatch = input.match(/(\w+)\s+(\w+)/);
-                    if (nameMatch && !inputLower.includes('training') && !inputLower.includes('department') && !inputLower.includes('engagement')) {
+                    if (nameMatch && !inputLower.includes('training') && !inputLower.includes('department') && !inputLower.includes('engagement') && !inputLower.includes('metric')) {
                         const firstName = nameMatch[1];
                         const lastName = nameMatch[2];
-                        const employeeData = await searchEmployee(firstName, lastName);
-                        if (employeeData) {
-                            kbContext = `\n\n[From Knowledge Base - Employee Record]\nEmployee Name: ${employeeData['FirstName']} ${employeeData['LastName']}\nEmployee ID: ${employeeData['EmpID']}\nTitle: ${employeeData['Title']}\nDepartment: ${employeeData['DepartmentType']}\nStatus: ${employeeData['EmployeeStatus']}\nPerformance Score: ${employeeData['Performance Score']}`;
+                        const employeeProfile = await getEmployeeProfile(firstName, lastName);
+                        if (employeeProfile) {
+                            const bp = employeeProfile.basicInfo;
+                            const jp = employeeProfile.jobInfo;
+                            const ep = employeeProfile.employment;
+                            const pp = employeeProfile.performance;
+                            kbContext = `\n\n[From Knowledge Base - Employee Profile]\nName: ${bp.name}\nID: ${bp.employeeId}\nEmail: ${bp.email}\n\nPosition: ${jp.title}\nDepartment: ${jp.department}\nDivision: ${jp.division}\nSupervisor: ${jp.supervisor}\n\nStatus: ${ep.status}\nType: ${ep.type}\nStart Date: ${ep.startDate}\nPay Zone: ${ep.payZone}\n\nPerformance: ${pp.score}\nRating: ${pp.rating}/5`;
+                        }
+                    }
+
+                    // Employee metrics/statistics
+                    if (inputLower.includes('metric') || inputLower.includes('overview') || inputLower.includes('statistics')) {
+                        const metrics = await getEmployeeMetrics();
+                        if (metrics.total) {
+                            const depts = Object.entries(metrics.byDepartment)
+                                .map(([k, v]) => `${k}: ${v}`)
+                                .join(', ');
+                            kbContext = `\n\n[From Knowledge Base - Employee Statistics]\nTotal Employees: ${metrics.total}\nActive: ${metrics.active}\nAvg Performance: ${metrics.averagePerformanceScore}/5\nBy Department: ${depts}`;
                         }
                     }
                 } catch (kbError) {

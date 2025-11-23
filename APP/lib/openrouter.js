@@ -30,9 +30,42 @@ ALWAYS respond with "Let me search our knowledge base for this information..." b
 
 The knowledge base API is available to the frontend application. When the user's question requires CSV data lookup, provide your response as if you have already queried the data (the frontend will handle the actual API call).
 
-For applicant searches, the recruitment_data.csv contains: Applicant ID, First Name, Last Name, Job Title, Status, Desired Salary, Years of Experience, Education Level, and more.
+## RECRUITMENT DATA (recruitment_data.csv) - 1000+ applicant records
+Available fields for queries:
+- Applicant Information: Applicant ID, First Name, Last Name, Email, Phone Number
+- Location: Address, City, State, Zip Code, Country
+- Job Information: Job Title, Desired Salary, Years of Experience, Education Level
+- Application Tracking: Status (Applied/Interviewing/In Review/Offered/Rejected), Application Date
+- Personal: Date of Birth, Gender
 
-For employee searches, employee_data.csv contains: EmpID, FirstName, LastName, Title, Department, EmployeeStatus, Performance Score, and more.`;
+Use for queries about:
+- Specific applicant status and salary expectations
+- Pipeline analysis by job title
+- Applicants filtering by status
+- Job title trends
+- Salary expectations analysis
+
+## EMPLOYEE DATA (employee_data.csv) - 500+ employee records
+Available fields for queries:
+- Basic Information: EmpID, FirstName, LastName, Email, Date of Birth, State
+- Job Information: Title, Department, Division, Business Unit, Supervisor
+- Employment Details: EmployeeStatus, EmployeeType, PayZone, Classification Type
+- Timeline: StartDate, ExitDate, TerminationType
+- Performance: Performance Score (Exceeds/Fully Meets/Partially Meets/Needs Improvement), Current Employee Rating (1-5)
+
+Use for queries about:
+- Specific employee information and performance
+- Department workforce breakdown
+- Employee statistics and metrics
+- Performance analysis
+- Employment type and status overview
+
+## CROSS-REFERENCE QUERIES
+The knowledge base supports intelligent cross-referencing:
+- Applicants matching existing employee roles
+- Applicants within specific salary ranges
+- Recruitment pipeline vs current workforce analysis
+- Comparative metrics between applicants and employees`;
 
 export async function sendMessage(messages) {
   if (!OPENROUTER_API_KEY) {
