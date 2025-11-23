@@ -12,7 +12,13 @@ import {
   getApplicantsByStatus,
   searchEmployee,
   getEmployeesByDepartment,
-  getTrainingByEmployee,
+  getTrainingByEmployeeId,
+  getTrainingByEmployeeName,
+  getEngagementByEmployeeId,
+  getEngagementByEmployeeName,
+  getTopTrainingPrograms,
+  getTrainingStatistics,
+  getEngagementStatistics,
   getKnowledgeBaseSummary,
 } from '@/lib/knowledgeBaseHelper';
 
@@ -146,12 +152,91 @@ export default function ChatPage() {
             ) {
                 try {
                     const nameMatch = input.match(/(\w+)\s+(\w+)/);
-                    if (nameMatch && !inputLower.includes('training') && !inputLower.includes('department')) {
+                    if (nameMatch && !inputLower.includes('training') && !inputLower.includes('department') && !inputLower.includes('engagement')) {
                         const firstName = nameMatch[1];
                         const lastName = nameMatch[2];
                         const employeeData = await searchEmployee(firstName, lastName);
                         if (employeeData) {
                             kbContext = `\n\n[From Knowledge Base - Employee Record]\nEmployee Name: ${employeeData['FirstName']} ${employeeData['LastName']}\nEmployee ID: ${employeeData['EmpID']}\nTitle: ${employeeData['Title']}\nDepartment: ${employeeData['DepartmentType']}\nStatus: ${employeeData['EmployeeStatus']}\nPerformance Score: ${employeeData['Performance Score']}`;
+                        }
+                    }
+                } catch (kbError) {
+                    console.warn('Knowledge base query failed:', kbError);
+                }
+            }
+
+            // Training and development queries
+            if (
+                inputLower.includes('training') ||
+                inputLower.includes('development') ||
+                inputLower.includes('course') ||
+                inputLower.includes('learning')
+            ) {
+                try {
+                    const nameMatch = input.match(/(\w+)\s+(\w+)/);
+                    
+                    // Employee-specific training
+                    if (nameMatch && !inputLower.includes('program') && !inputLower.includes('statistic')) {
+                        const firstName = nameMatch[1];
+                        const lastName = nameMatch[2];
+                        const trainingData = await getTrainingByEmployeeName(firstName, lastName);
+                        if (trainingData && trainingData.length > 0) {
+                            const trainingList = trainingData
+                                .slice(0, 3)
+                                .map((t) => `${t['Training Program Name']} (${t['Training Outcome']})`)
+                                .join(', ');
+                            kbContext = `\n\n[From Knowledge Base - Training Records]\nTraining Programs: ${trainingList}`;
+                        }
+                    }
+
+                    // Top training programs
+                    if (inputLower.includes('popular') || inputLower.includes('common') || inputLower.includes('top')) {
+                        const topPrograms = await getTopTrainingPrograms(5);
+                        if (topPrograms.length > 0) {
+                            const programList = topPrograms
+                                .map((p) => `${p.name} (${p.count})`)
+                                .join(', ');
+                            kbContext = `\n\n[From Knowledge Base - Top Training Programs]\n${programList}`;
+                        }
+                    }
+
+                    // Training statistics
+                    if (inputLower.includes('statistic') || inputLower.includes('average') || inputLower.includes('overview')) {
+                        const stats = await getTrainingStatistics();
+                        if (stats.total > 0) {
+                            kbContext = `\n\n[From Knowledge Base - Training Statistics]\nTotal Programs: ${stats.total}\nAverage Cost: $${stats.averageCost}\nAverage Duration: ${stats.averageDuration} days\nOutcomes: ${Object.entries(stats.byOutcome).map(([k, v]) => `${k} (${v})`).join(', ')}`;
+                        }
+                    }
+                } catch (kbError) {
+                    console.warn('Knowledge base query failed:', kbError);
+                }
+            }
+
+            // Engagement and satisfaction queries
+            if (
+                inputLower.includes('engagement') ||
+                inputLower.includes('satisfaction') ||
+                inputLower.includes('work-life') ||
+                inputLower.includes('survey')
+            ) {
+                try {
+                    const nameMatch = input.match(/(\w+)\s+(\w+)/);
+                    
+                    // Employee-specific engagement
+                    if (nameMatch && !inputLower.includes('overall') && !inputLower.includes('average')) {
+                        const firstName = nameMatch[1];
+                        const lastName = nameMatch[2];
+                        const engagementData = await getEngagementByEmployeeName(firstName, lastName);
+                        if (engagementData) {
+                            kbContext = `\n\n[From Knowledge Base - Employee Engagement]\nEngagement Score: ${engagementData['Engagement Score']}/5\nSatisfaction Score: ${engagementData['Satisfaction Score']}/5\nWork-Life Balance Score: ${engagementData['Work-Life Balance Score']}/5\nSurvey Date: ${engagementData['Survey Date']}`;
+                        }
+                    }
+
+                    // Overall engagement statistics
+                    if (inputLower.includes('overall') || inputLower.includes('average') || inputLower.includes('statistic')) {
+                        const stats = await getEngagementStatistics();
+                        if (stats.total > 0) {
+                            kbContext = `\n\n[From Knowledge Base - Engagement Statistics]\nTotal Responses: ${stats.total}\nAverage Engagement: ${stats.averageEngagementScore}/5\nAverage Satisfaction: ${stats.averageSatisfactionScore}/5\nAverage Work-Life Balance: ${stats.averageWorkLifeBalance}/5`;
                         }
                     }
                 } catch (kbError) {
