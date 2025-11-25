@@ -2,7 +2,7 @@
 
 ## Overview
 The complete TalentPilot system prompt has been implemented across your HR agent application. The agent now follows the comprehensive Elite HR Orchestration Agent architecture in every chat interaction.
-
+'
 ## Files Modified/Created
 
 ### 1. **Created: `lib/talentPilotSystemPrompt.js`**
