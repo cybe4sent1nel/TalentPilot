@@ -1,4 +1,4 @@
-#<iframe src="https://tryhackme.com/api/v2/badges/public-profile?userPublicId=6107377" style='border:none;'></iframe>
+[![TryHackMe Badge](https://tryhackme-badges.s3.amazonaws.com/fahadkhanxyz8816.png)](https://tryhackme.com/p/fahadkhanxyz8816)
 # TalentPilot - AI-Powered HR Orchestration Agent
 
 > **Powered by IBM WatsonX | Designed and developed by Fahad Khan**
